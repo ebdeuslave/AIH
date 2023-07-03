@@ -1,0 +1,9 @@
+
+{% extends 'base.html' %}
+{% block body %}
+    <form action="" method="POST">{% csrf_token %} 
+        <h3 style="color: black;">Suppression Livraison ID N° {{ object.id }} : "{{ object.phone}} | {{ object.zone}} | {{ object.montant_DH}} DH"</h3>
+        <br><br>
+        <input class="btn btn-danger btn-md" type="submit" value="Supprimer"/>   <a style="margin-left: 30px;" href="{% url 'livraison:livraison' %}" class="btn btn-info btn-md" role="button">Retour</a>
+    </form>
+{% endblock %}

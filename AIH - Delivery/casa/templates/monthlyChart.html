@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+<title>{% block title %} Charts - Delivery System {% endblock %}</title>
+{% block body %}
+
+
+
+{%block scripts%}
+<script>
+
+$(document).ready(function(){
+
+    $('#livre-nav').click(function () {
+            $('.retour-body').hide();
+            $('.monthly-body').show();
+
+        })
+
+    $('#retour-nav').click(function () {
+        $('.retour-body').show();
+        $('.monthly-body').hide();
+
+        })
+
+    var months = [1,2,3,4,5,6,7,8,9,10,11,12];
+   
+    var monthlyCmds = document.getElementById('monthlyCmds').getContext('2d');
+    var myChart3 = new Chart(monthlyCmds, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Commandes' ,
+                    data: {{monthly_total}},
+                    backgroundColor: 'lightblue', 
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1,
+                },
+                ],
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                      
+                    }
+                }
+}
+
+    });
+
+    var monthlyMt = document.getElementById('monthlyMt').getContext('2d');
+    var myChart4 = new Chart(monthlyMt, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Montant' ,
+                    data: {{monthly_mt}},
+                    backgroundColor: 'lightgreen', 
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1,
+                },
+                ],
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                      
+                    }
+                }
+}
+
+    });
+
+    // retour
+
+
+    var monthlyCmds_retour = document.getElementById('monthlyCmds_retour').getContext('2d');
+    var myChart5 = new Chart(monthlyCmds_retour, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Commandes' ,
+                    data: {{monthly_total_retour}},
+                    backgroundColor: 'lightblue', 
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1,
+                },
+                ],
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                      
+                    }
+                }
+}
+
+    });
+
+    var monthlyMt_retour = document.getElementById('monthlyMt_retour').getContext('2d');
+    var myChart6 = new Chart(monthlyMt_retour, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Montant' ,
+                    data: {{monthly_mt_retour}},
+                    backgroundColor: 'lightgreen', 
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1,
+                },
+                ],
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                      
+                    }
+                }
+}
+
+    });
+
+
+
+    
+
+})
+
+
+</script>
+{%endblock scripts%}
+
+
+
+
+{%block content%}
+<div class="card text-center">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link" id="daily-nav" href="{% url 'livraison:charts' %}">Quotidien</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'livraison:zoneschart' %}">Zones</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="livre-nav" href="#">Livré</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="retour-nav" href="#">Retour</a>
+          </li>
+      </ul>
+      
+    </div>
+
+    <div id='search'style="text-align: center;">
+        <form action="{% url 'livraison:monthlyCharts' %}" method="get">
+            <input name="q" id="id_q" type="number" placeholder="Année (Ex: 2023)" value="{{query}}" required>
+            <button type="submit">Resultat</button>
+        </form>
+    </div>
+    <div class="monthly-body">
+
+        
+        <br>
+        <h3 style="text-align: center; color: lightblue;"><b>{{sum_monthly_orders}} Commandes</b></h3>
+        <canvas id="monthlyCmds" width="50" height="20" style="background-color: white;"></canvas>  
+        <h3 style="text-align: center; color: lightgreen;"><b>{{sum_monthly_mt}} DHs</b></h3>
+        <canvas id="monthlyMt" width="50" height="20" style="background-color: white;"></canvas>  
+        <br>
+        
+        
+    </div>
+
+    <div class="retour-body" style="display: none;">
+        <br>
+        <h3 style="text-align: center; color: lightblue;"><b>{{sum_monthly_orders_retour}} Commandes</b></h3>
+        <canvas id="monthlyCmds_retour" width="50" height="20" style="background-color: white;"></canvas>  
+        <h3 style="text-align: center; color: lightgreen;"><b>{{sum_monthly_mt_retour}} DHs</b></h3>
+        <canvas id="monthlyMt_retour" width="50" height="20" style="background-color: white;"></canvas>  
+
+        
+    </div>
+
+</div>
+
+
+
+<br>
+
+{%endblock content%}
+
+
+{% endblock %}

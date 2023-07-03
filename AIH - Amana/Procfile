@@ -1,0 +1,1 @@
+web: gunicorn amana_system.wsgi --log-file -

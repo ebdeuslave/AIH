@@ -1,0 +1,80 @@
+<html>
+
+<head>
+    <title>Bon de Ramassage:{{today}}</title>
+    <style>
+        
+        td {
+            width: 120px;
+            font-size: 12px;
+            text-align: center;
+            padding: 5px;
+        }
+        
+        h1 {
+            padding-top: 0;
+            margin: 0;;
+        }
+        @page {  
+            left: 1pt; top: 10pt;
+            @frame footer_frame {           
+                -pdf-frame-content: footer_content;
+                left: 25pt;top: 812pt; font-size: 300px;
+        }
+    }
+    </style>
+
+</head>
+
+<body>
+    
+   
+   
+        <img align="left" src="{{server_url}}static/images/africaLogo.png" width="300px" height="120px">
+        <br>
+        <h1 style="padding-top: 1;">{{today}}</h1>
+        <h1>Africa internet holding</strong>&nbsp;<strong>- Service livraison</h1>
+        <h1>CCP N&deg;&nbsp;: 7229577-L</h1>
+        <h1><strong>Jamila</strong><strong>&nbsp;4 rue 90 CASABLANCA</strong></h1>
+        <h1 style="text-align: center;font-size: 20px ;"><strong>Bon de ramassage Amana</strong></h1>
+        <h1 style="text-align: center;font-size: 20px ;">Total Colis : {{total}}</h1>
+    
+   
+
+
+        {% for l in livraison %}
+       
+        
+        <table border="1">
+            <thead>
+                <th colspan="7"><br>
+                    <div style="text-align: center;">
+                        <pdf:barcode value="AIH{{l.cab}}MA" type="code128" humanreadable="1" middle />
+                    </div>
+                    <br>
+                </th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{l.site}}</td>
+                    <td>{{l.name.title}}</td>
+                    <td>{{l.address}}</td>
+                    <td>{{l.city}}</td>
+                    <td>{{l.phone}}</td>
+                    <td>{{l.price}}.00 DH</td>
+                    <td>CCP:7229577-L</td>
+                    
+                </tr>
+            </tbody>
+            <br><br><br>
+    </table>
+        
+        {%endfor%}
+
+        <div id="footer_content">page <pdf:pagenumber>
+            of <pdf:pagecount>
+
+        </div>
+</body>
+
+</html>

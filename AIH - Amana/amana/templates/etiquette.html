@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Etiquettes</title>
+
+    <style>
+        td,th {
+            font-size: 18px;
+            text-align: center;
+            padding: 2px;
+        }
+        table {
+            margin-bottom: 20px;
+            margin-top: 0px;
+        }
+        p {
+            padding-top: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    {% for l in livraison %}
+
+    <table border="1">
+            <thead>
+                <th style="padding-top: 1px; padding-bottom: 1px;">{{l.site}}</th>
+                <th style="padding-top: 1px; padding-bottom: 1px; margin-left: 0px;">
+                    <div style="text-align: center;">
+                        <pdf:barcode value="AIH{{l.cab}}MA" type="code128" humanreadable="1" middle />
+                    </div>
+                </th>
+                <th style="padding-top: 1px; padding-bottom: 1px;"><img src="{{server_url}}static/images/amanaLogo.png" width="140px" height="100px">Amana</th>
+            </thead>
+            <thead>
+                <th colspan="2" >Expéditeur / SMI : </th>
+                <th>{{today}}</th>
+            </thead>
+            <thead>
+                <th colspan="2" style="text-align: left;">
+                    <p style="padding-top: 5px;">Africa Internet Holding S.A.R.L</p>
+                    <p>Rue 90 Jamila 4 Sebata CASABLANCA</p>
+                    <p>0661549874</p>
+                    <p>CCP N° : 7229577-L</p>
+                </th>
+                <th>Réservé au client</th>
+            </thead>
+            <thead>
+                <th colspan="3" style="padding-top: 5px;">Destinataire : </th>
+            </thead>
+            <thead>
+                <th colspan="3" style="text-align: left;">
+                    <p style="padding-top: 5px;">Nom&Prenom: {{l.name.title}}</p>
+                    <p>Adresse: {{l.address}}</p>
+                    <p>Ville: {{l.city.title}}</p>
+                    <p>Phone: {{l.phone}}</p>
+                    <p>MT CRBT à encaisser: {{l.price}}.00 DH</p>
+                    <p>CCP N° : 7229577-L</p>
+                </th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="2" style="text-align: right; padding-top: 8px;font-weight: bold; ">Ville :</td>
+                    <td style="padding-top: 8px; font-weight: bold;">{{l.city.upper}}</td>
+                </tr>
+            </tbody>
+    </table>
+    {%endfor%}
+    
+    
+</body>
+</html>

@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+<title>{% block title %} Livraison - Delivery System {% endblock %}</title>
+
+{% block body %}
+
+{% load startswith %}
+{% load pagingfilter %}
+
+<br><br><br><br>
+
+{% if user.is_staff %}
+<div class="button-group">
+    <a href="{% url 'livraison:add_livraison' %}" class="btn btn-primary btn-md" role="button" title="Ajout Livraison"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="32" height="32"><path fill-rule="evenodd" d="M13.25 2.5H2.75a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h10.5a.25.25 0 00.25-.25V2.75a.25.25 0 00-.25-.25zM2.75 1h10.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0113.25 15H2.75A1.75 1.75 0 011 13.25V2.75C1 1.784 1.784 1 2.75 1zM8 4a.75.75 0 01.75.75v2.5h2.5a.75.75 0 010 1.5h-2.5v2.5a.75.75 0 01-1.5 0v-2.5h-2.5a.75.75 0 010-1.5h2.5v-2.5A.75.75 0 018 4z"></path></svg></a>
+    <a href="#" class="btn btn-secondary btn-md" role="button" style="float: right;">Total : <br> {% if total == 1 or total == 0%} {{ total }} Livraison {%else%}{{ total }} Livraisons {%endif%} <br> {{sum_mt_all}} DH </a>
+    <a href="#" class="btn btn-success btn-md" role="button" style="float: right; margin-right: 10px;">Livrés : {{ total_delivered }} <br>{{percentage_delivered}}<br>{{ sum_mt_delivered }} DH </a>
+    <a href="#" class="btn btn-primary btn-md" role="button" style="float: right; margin-right: 10px;">Encours : {{ total_encours }} <br>{{percentage_encours}}<br>{{ sum_mt_encours }} DH</a>
+    <a href="#" class="btn btn-danger btn-md" role="button" style="float: right; margin-right: 10px;">Retournés : {{ total_returned }} <br> {{percentage_returned}}<br>{{ sum_mt_returned }} DH </a>
+</div>
+{% endif %}
+
+<br><br>
+<div class="card card-body" id='filter'>
+    <form action="get" autocomplete="off">
+        {{ filter.form }} 
+        <button class="btn btn-primary" type="submit">Filtrer</button>
+
+    </form>
+</div>
+
+{% if total == 0 %}
+<br><br><br><br><br><br><p class="text-center display-4" style="color: red;">Nothing's found</p>
+
+{% else %}
+
+<br>
+<div id='search'style="text-align: center;">
+    <form action="{% url 'livraison:search_results' %}" method="get">
+        <input name="q" id="id_q" type="text" placeholder="Search.." required>
+        <button type="submit">Find</button>
+    </form>
+</div>
+
+<br>
+
+
+<div class="dropdown" style="float: left;">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Actions">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="20" height="20"><path fill-rule="evenodd" d="M16 2.75A1.75 1.75 0 0014.25 1H1.75A1.75 1.75 0 000 2.75v2.5A1.75 1.75 0 001.75 7h12.5A1.75 1.75 0 0016 5.25v-2.5zm-1.75-.25a.25.25 0 01.25.25v2.5a.25.25 0 01-.25.25H1.75a.25.25 0 01-.25-.25v-2.5a.25.25 0 01.25-.25h12.5zM16 10.75A1.75 1.75 0 0014.25 9H1.75A1.75 1.75 0 000 10.75v2.5A1.75 1.75 0 001.75 15h12.5A1.75 1.75 0 0016 13.25v-2.5zm-1.75-.25a.25.25 0 01.25.25v2.5a.25.25 0 01-.25.25H1.75a.25.25 0 01-.25-.25v-2.5a.25.25 0 01.25-.25h12.5z"></path></svg>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <button class="dropdown-item" style="background-color:rgb(43, 226, 217); margin-bottom: 10px;"><a href="{% url 'livraison:pdf_cmnd2' %}" target="_blank">Bon de Livraison</a></button>
+      {% if user.is_superuser%}
+      <button class="dropdown-item" id="today" style="background-color:rgb(212, 166, 40);margin-bottom: 10px;">Date Aujourd'hui</button>
+      <button class="dropdown-item" style="background-color:rgb(54, 212, 40);margin-bottom: 10px;"><a href="{% url 'livraison:changestatus' %}" target="_blank">Encours de livraison</a></button>
+      <button class="dropdown-item" style="background-color:rgb(212, 209, 40);margin-bottom: 10px;"><a href="{% url 'livraison:livraisonChecker' %}" target="_blank">Checker</a></button>
+      <button class="dropdown-item" id="delete" style="background-color:red;">Suppression</button>
+      {% endif %}
+      {% if user|title == 'Para' %}
+      <button class="dropdown-item" style="background-color:rgb(212, 209, 40);margin-bottom: 10px;"><a href="{% url 'livraison:livraisonChecker' %}" target="_blank">Checker</a></button>
+      {% endif %}
+    </div>
+  </div> 
+
+
+  {% if user.is_superuser %}
+<div class="dropdown" style="float: right;">
+    <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Change Status
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <button class="dropdown-item" id="paid" style="background-color:lightgreen;margin-bottom: 10px;">Livrée</button>
+      <button class="dropdown-item" id="returned" style="background-color:red;margin-bottom: 10px;">Annulée</button>
+      <button class="dropdown-item" id="pr" style="background-color:rgb(212, 40, 40);">PR/Inj/Inj</button>
+    </div>
+  </div> 
+{% endif %}
+
+<br><br><br>
+<table id='livraison-table' class="display" style="width:100%">
+    <thead>
+        <tr>
+            {% if user.is_staff %}
+            <th><input type="checkbox" id='select_all' name='selectall' value='0' onclick="select_all(this)"></th>
+            {% endif %}
+            <th>ID</th>
+            <th>Site</th>
+            <th>Zone</th>
+            <th>Phone</th>
+            <th>Montant</th>
+            <th>Remarque</th>
+            <th>Date</th>
+            <th>Mr</th>
+            <th>Status</th>
+            {% if user.is_staff %}
+            <th>Modifier</th>
+            {% endif %}
+            {% if user.is_superuser %}
+            <th>Supprimer</th>
+            {% endif %}
+   
+
+           
+        </tr>
+    </thead>
+    {% csrf_token %}
+    <tbody>
+        
+        {% for l in livraison %}
+        <tr {%if l.status.pk == 3 %} style="background-color: red;" {% elif l.status.pk == 2 %} style="background-color: lightgreen;" {%endif%} id="{{l.pk}}"> 
+            {% if user.is_staff %}
+            <td style="text-align:center;">{% if l.status.nom == 'Encours' %}<input id='select' type="checkbox" name="selected" value="{{ l.pk }}">{%endif%}</td>
+            {% endif %}
+            <td>{{ l.n_commande }}</td>
+            <td>{{ l.site }}</td>
+            <td>{{l.zone.nom}}</td>
+            <td id="phone">{{ l.phone }}</td>
+            <td style="text-align:center;">{{ l.montant_DH }}</td>
+            <td>{{ l.commentaire }}</td> 
+            <td>{{ l.created }}</td> 
+            <td title="{{ l.zone.livreur.phone }}">{{ l.zone.livreur }}</td>
+            <td>{{ l.status.nom }}</td>
+            {% if user.is_staff %}
+            <td  style="text-align:center;"><a href="{{ l.pk }}/update"><img src="/static/img/edit.png" alt="Modifier" width="20px" height="20px"></a></td>
+            {% endif %} 
+            {% if user.is_superuser %}
+            <td  style="text-align:center;"><a href="{{ l.pk }}/delete"><img src="/static/img/delete.png" alt="Delete" width="20px" height="20px"></a></td>
+            {% endif %} 
+        </tr>
+        {% endfor %}
+        {% endif %} 
+
+       
+    </tbody>
+</table>
+<br>
+<div id="pagination">
+    <span class="step-links">
+        {% if livraison.has_previous %}
+        <button type="button" class="btn btn-link"><a href="?{% param_replace page=1 %}"><p style="color: black; font-weight: bold;">&laquo; First</p></a></button>
+        <button type="button" class="btn btn-link"><a href="?{% param_replace page=livraison.previous_page_number %}"><p style="color: black; font-weight: bold;">Previous</p> </a></button>
+        {% endif %}
+
+        <span class="current">
+            Page {{ livraison.number }} of {{ livraison.paginator.num_pages }}
+        </span>
+
+        {% if livraison.has_next %}
+            <button type="button" class="btn btn-link"><a href="?{% param_replace page=livraison.next_page_number %}"><p style="color: black; font-weight: bold;">Next</p> </a></button>
+            <button type="button" class="btn btn-link"><a href="?{% param_replace page=paginator.num_pages %}"><p style="color: black;font-weight: bold;">Last &raquo;</p> </a></button>
+        {% endif %}
+        
+    </span>
+</div>
+<script>
+ var _date = new Date();
+            var today = _date.getDate()+'-'+(_date.getMonth()+1)+'-'+_date.getFullYear();
+
+            // initialise DataTable
+            var table = $('#livraison-table').DataTable({
+                order: [],
+                paging: false,
+                dom: 'Bfrtip',
+                buttons: [    
+                    'selectAll',
+            {
+                extend: 'pdfHtml5',
+                download: 'open',
+                text: 'Selection To PDF',
+                title: 'Allo Coursier',
+                messageTop: `Mr. {{ livreur }} - ${today} - {{ total_encours }} CMDs - {{ sum_mt_encours }} DH `,
+                exportOptions: {
+                    columns: [2,3,4,5,6],
+                    modifier: {
+                        selected: true
+                    }
+                },
+                customize: function(doc) {
+                    doc.defaultStyle.fontSize = 14; 
+                    }  
+            },
+
+                ],
+                select: true
+            });
+
+
+</script>
+{% endblock %}

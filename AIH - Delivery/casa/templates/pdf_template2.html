@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{now}} </title>
+
+    <style>
+        body {
+            font-size: 14px;
+        }
+
+        #head {
+            font-size: 20px;
+        }
+
+        #phone {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        #mt {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        @page {
+            size: a4 portrait;
+            margin: 1.1cm 0.5cm 0.5cm 0.5cm;
+            font-size: 200px;
+        }
+        td {
+            padding-top: 4px;
+
+
+        }
+    </style>
+
+</head>
+{% load startswith %}
+<body>
+    <h2 style="text-align:center;">{% if livraisons %} {{ now }} | {% if livreur_count == 1 %} Mr. {{ livreur }} {%else%} All {%endif%}
+        {%else%} Vide {%endif%} |
+    Total CMD : {% if total == 1 or total == 0 %} {{total}} Commande {% else %} {{total}} Commandes{% endif %} | MT Total : {{sum}} DH
+    </h2>
+
+
+    <table id="table">
+        <thead>
+            <tr id="head">
+                <th style="text-align:center;">Site</th>
+                <th style="text-align:left;">Zone</th>
+                <th>Phone</th>
+                <th style="text-align:right;">Montant</th>
+                <th>Remarque</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        
+            {% for l in livraisons %}      
+            <tr style="text-align:center;border: 0.5px outset #000000;">
+                <td style="text-align:center;">{{ l.site }}</td>
+                <td style="text-align:left;margin-left: 5px; ">{{ l.zone.nom }}</td>
+                <td id='phone'>{{ l.phone }}</td>
+                <td id='mt' style="text-align:right;margin-right: 5px; ">{{ l.montant_DH }} dh</td>
+                <td>{{ l.commentaire }}</td>
+                <td></td>
+            </tr>
+            {% endfor %}
+            
+
+        </tbody>
+
+    </table>
+
+</body>
+
+</html>

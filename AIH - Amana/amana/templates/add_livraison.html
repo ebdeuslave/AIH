@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+<title>{% block title %} Ajouter {% endblock %}</title>
+
+{% block body %}
+<div class="container">
+    {% for message in messages %}
+    <p id="added" style="color:black;background-color: lightgreen; width: auto;display: inline-block;">{{message}}</p>
+    {%endfor%}
+    <br>
+    <form action="" method="POST" autocomplete="off">
+       
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group row" id='amanaApp_form'>
+            <label for="id_{{ field.name }}" class="col-2 col-form-label" style="color:white;"> {{ field.label }} </label>
+            <div class="col-10">
+                {{ field }}
+            </div>
+
+        </div>
+
+        {% endfor %}
+        <br>
+        <button type="submit" id = 'add_btn' class="btn btn-primary" name="button" style="margin-bottom: 50px;">Ajouter</button>
+    </form>
+
+</div>
+{{ form.as_ap }}
+{% endblock %}

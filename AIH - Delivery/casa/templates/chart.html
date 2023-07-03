@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+<title>{% block title %} Charts - Delivery System {% endblock %}</title>
+{% block body %}
+
+
+
+{%block scripts%}
+<script>
+// TXT to Speech
+function TXT2Voice() {
+
+    var totalCMDs = new SpeechSynthesisUtterance();
+    totalCMDs.text = {{sum_total_cmds}} + ' Commandes' + 'Total montant ' +  {{sum_total_mt}};
+    window.speechSynthesis.speak(totalCMDs);
+
+}
+$(document).ready(function(){
+
+    // show monthly
+    $('#monthly-nav').click(function () {
+            $('.daily-body').hide();
+            $('.monthly-body').show();
+
+        })
+
+    // show daily
+    $('#daily-nav').click(function () {
+        $('.daily-body').show();
+        $('.monthly-body').hide();
+
+        })
+     
+
+    var date_labels = [];
+    
+    {% for day in date_list %}
+        date_labels.push({{day}});
+    {% endfor %}
+
+   
+
+    var ctx1 = document.getElementById('myChart1').getContext('2d');
+        var myChart1 = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: date_labels,
+                datasets: [{
+                    label: 'Commandes',
+                    data: {{total_cmds}},
+                    backgroundColor: 'lightblue', 
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1,
+                },
+                ],
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                      
+                    }
+                }
+}
+
+    });
+
+
+    var ctx2 = document.getElementById('myChart2').getContext('2d');
+    var myChart2 = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: date_labels,
+                datasets: [{
+                    label: 'Montant' ,
+                    data: {{total_mt}},
+                    backgroundColor: 'lightgreen', 
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1,
+                },
+                ],
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                      
+                    }
+                }
+}
+
+    });
+
+    
+
+
+
+
+
+
+
+
+
+
+})
+</script>
+{%endblock scripts%}
+
+
+
+
+{%block content%}
+<div class="card text-center">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link" id="daily-nav" href="#">Quotidien</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="monthly-nav" href="{% url 'livraison:monthlyCharts' %}">Mensuelle</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="monthly-nav" href="{% url 'livraison:zoneschart' %}">Zones</a>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="daily-body">
+        <div class="card card-body" id='filter'>
+            <form action="get" autocomplete="off">
+                {{ filter.form }} 
+                <button class="btn btn-primary" type="submit">Filtrer</button>
+        
+            </form>
+        </div>
+        
+        
+        <h3 style="text-align: center; color: lightblue;"><b>{{sum_total_cmds}} Commandes</b></h3>
+        <canvas id="myChart1" width="50" height="20" style="background-color: white;"></canvas>  
+        <h3 style="text-align: center; color: lightgreen;"><b>{{sum_total_mt}} DHs</b></h3>
+        <canvas id="myChart2" width="50" height="20" style="background-color: white;"></canvas>  
+        
+
+    </div>
+
+    
+
+</div>
+
+
+
+<br>
+
+{%endblock content%}
+
+
+{% endblock %}

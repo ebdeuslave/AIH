@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+<title>{% block title %} Confirmation du Status - Delivery System{% endblock %}</title>
+{% load startswith %}
+{% block body %}
+
+
+
+{% if livreurs == 1 %}
+<h3 style="background-color: greenyellow; width: auto;display: inline;">Vérifiez les Livraisons..</h3><br><br>
+
+<br><br>
+<table id='livraison-table2' class="table table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Site</th>
+            <th>Zone</th>
+            <th>Phone</th>
+            <th>Montant</th>
+            <th>Note</th>
+            <th>Date</th>
+            <th>Mr</th>
+            <th>Status</th>
+            <th>Modifier</th>
+            <th>Supprimer</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        {% for l in queryset %}
+        <td>{{ l.pk }}</td>
+        <td>{{ l.site }}</td>
+        <td> {%if l.zone.nom|startswith:'Z'%} {{ l.zone.nom|slice:'4:'}} {%else%} {{l.zone.nom}} {%endif%}</td>
+        <td id="phone">{{ l.phone }}</td>
+        <td style="text-align:center;">{{ l.montant_DH }} dh</td>
+        <td>{{ l.commentaire }}</td>
+        <td>{{ l.created }}</td>
+        <td>{{ l.zone.livreur }}</td>
+        <td>{{ l.status }}</td>
+        <td style="text-align:center;"><a href="{{ l.pk }}/update"><img src="/static/img/edit.png" alt="Modifier"
+                    width="20px" height="20px"></a></td>
+        <td style="text-align:center;"><a href="{{ l.pk }}/delete"><img src="/static/img/delete.png" alt="Delete"
+                    width="20px" height="20px"></a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<form action="" method="POST">{% csrf_token %}
+    <input class="btn btn-success btn-md" type="submit" value="Marquer comme Livré" /> <a style="margin-left: 30px;"
+        class="btn btn-info btn-md" role="button" onclick="javascript:window.close()">Fermer</a>
+</form>
+<br>
+{%else%}
+
+<h2 style="background-color: orangered;">ATTENTION : Assurez-vous de régler le <u>FILTRE</u> par Livreur et réessayez </h2>
+<br>
+<
+{%endif%}
+{% endblock %}

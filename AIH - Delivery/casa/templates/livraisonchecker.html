@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+
+
+{% block body %}
+
+<br>
+
+
+<div style="text-align: center; background-color: aliceblue;">
+
+
+    <h1>NOT CMI : {{NOT_CMI|length}} </h1>
+    <table id="checker-table1">
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th>ID</th>
+                <th>Phone</th>
+                <th>MT Actuel</th>
+                <th>MT Original</th>
+                <th>Zone</th>
+                <th>Livreur</th>
+                <th>Historique</th>
+                <th>Lien Commande</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in NOT_CMI %}
+                
+            <tr style="text-align:left;">
+                <td>{{obj.0.title}}</td>
+                <td>{{obj.1}}</td>
+                <td>{{obj.2}}</td>
+                <td>{{obj.3}}</td>
+                <td>{{obj.4}}</td>
+                <td>{{obj.5}}</td>
+                <td>{{obj.6}}</td>
+                <td><a href="http://livraison.local:8002/livraison/search?q={{obj.2}}" target="_blank"><i class="bi bi-clock-history"></i></a></td>
+            {% if obj.0 == 'parapharma' %}
+                <td><a href="https://{{obj.0}}.ma/admin112nza0id/index.php/sell/orders/{{obj.1}}/view?_token=ZQg5jn4RNoMaXWH3lqllopQZVBPbcoAO0zfkc1cqlMk" target="_blank"><i class="bi bi-receipt"></i></a></td>
+            {% elif obj.0 == 'coinpara' %}
+                <td><a href="https://{{obj.0}}.ma/backoffice/index.php/sell/orders/{{obj.1}}/view?_token=ZQg5jn4RNoMaXWH3lqllopQZVBPbcoAO0zfkc1cqlMk" target="_blank"><i class="bi bi-receipt"></i></a></td>
+            {% else %}
+                <td><a href="https://{{obj.0}}.ma/parabio/index.php/sell/orders/{{obj.1}}/view?_token=ZQg5jn4RNoMaXWH3lqllopQZVBPbcoAO0zfkc1cqlMk" target="_blank"><i class="bi bi-receipt"></i></a></td>
+            {% endif %}
+                <td>{{obj.7}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Remboursements : {{REFUND|length}}</h1>
+    <table id="checker-table0">
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th>ID</th>
+                <th>Phone</th>
+                <th>MT Actuel</th>
+                <th>MT Original</th>
+                <th>Zone</th>
+                <th>Livreur</th>
+                <th>Historique</th>
+                <th>Lien Commande</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in REFUND %}
+                
+            <tr style="text-align:left;">
+                <td>{{obj.0.title}}</td>
+                <td>{{obj.1}}</td>
+                <td>{{obj.2}}</td>
+                <td>{{obj.3}}</td>
+                <td>{{obj.4}}</td>
+                <td>{{obj.5}}</td>
+                <td>{{obj.6}}</td>
+                <td><a href="http://livraison.local:8002/livraison/search?q={{obj.2}}" target="_blank"><i class="bi bi-clock-history"></i></a></td>
+            {% if obj.0 == 'parapharma' %}
+                <td><a href="https://{{obj.0}}.ma/admin112nza0id/index.php/sell/orders/{{obj.1}}/view?_token=ZQg5jn4RNoMaXWH3lqllopQZVBPbcoAO0zfkc1cqlMk" target="_blank"><i class="bi bi-receipt"></i></a></td>
+            {% elif obj.0 == 'coinpara' %}
+                <td><a href="https://{{obj.0}}.ma/backoffice/index.php/sell/orders/{{obj.1}}/view?_token=ZQg5jn4RNoMaXWH3lqllopQZVBPbcoAO0zfkc1cqlMk" target="_blank"><i class="bi bi-receipt"></i></a></td>
+            {% else %}
+                <td><a href="https://{{obj.0}}.ma/parabio/index.php/sell/orders/{{obj.1}}/view?_token=ZQg5jn4RNoMaXWH3lqllopQZVBPbcoAO0zfkc1cqlMk" target="_blank"><i class="bi bi-receipt"></i></a></td>
+            {% endif %}
+                <td>{{obj.7}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Montant Modifié : {{NOT_SAME_PRICE|length}}</h1>
+    <table id="checker-table2">
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th>ID</th>
+                <th>Phone</th>
+                <th>MT Actuel</th>
+                <th>MT Original</th>
+                <th>Zone</th>
+                <th>Livreur</th>
+                <th>Historique</th>
+                <th>Lien Commande</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in NOT_SAME_PRICE %}
+                
+            <tr style="text-align:left;">
+                <td>{{obj.0.title}}</td>
+                <td>{{obj.1}}</td>
+                <td>{{obj.2}}</td>
+                <td>{{obj.3}}</td>
+                <td>{{obj.4}}</td>
+                <td>{{obj.5}}</td>
+                <td>{{obj.6}}</td>
+                <td><a href="http://livraison.local:8002/livraison/search?q={{obj.2}}" target="_blank"><i class="bi bi-clock-history"></i></a></td>
+            {% if obj.0 == 'parapharma' %}
+                <td><a href="https://{{obj.0}}.ma/admin112nza0id/index.php/sell/orders/{{obj.1}}/view?_token=ZQg5jn4RNoMaXWH3lqllopQZVBPbcoAO0zfkc1cqlMk" target="_blank"><i class="bi bi-receipt"></i></a></td>
+            {% elif obj.0 == 'coinpara' %}
+                <td><a href="https://{{obj.0}}.ma/backoffice/index.php/sell/orders/{{obj.1}}/view?_token=ZQg5jn4RNoMaXWH3lqllopQZVBPbcoAO0zfkc1cqlMk" target="_blank"><i class="bi bi-receipt"></i></a></td>
+            {% else %}
+                <td><a href="https://{{obj.0}}.ma/parabio/index.php/sell/orders/{{obj.1}}/view?_token=ZQg5jn4RNoMaXWH3lqllopQZVBPbcoAO0zfkc1cqlMk" target="_blank"><i class="bi bi-receipt"></i></a></td>
+            {% endif %}
+                <td>{{obj.7}}</td>
+        </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Whatsapp / NO ID : {{NOT_CMD_ID|length}}</h1>
+    <table id="checker-table3">
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th>ID</th>
+                <th>Phone</th>
+                <th>MT Actuel</th>
+                <th>Zone</th>
+                <th>Livreur</th>
+                <th>Historique</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in NOT_CMD_ID %}
+                
+            <tr style="text-align:left;">
+                <td>{{obj.site}}</td>
+                <td>{{obj.n_commande}}</td>
+                <td>{{obj.phone}}</td>
+                <td>{{obj.montant_DH}}</td>
+                <td>{{obj.zone.nom}}</td>
+                <td>{{obj.zone.livreur}}</td>
+                <td><a href="http://livraison.local:8002/livraison/search?q={{obj.phone}}" target="_blank"><i class="bi bi-clock-history"></i></a></td>
+                <td>{{obj.created}}</td>
+                {% endfor %}
+        </tbody>
+    </table>
+
+  
+    
+
+
+
+    
+
+
+
+
+</div>
+
+
+{% endblock %}
+

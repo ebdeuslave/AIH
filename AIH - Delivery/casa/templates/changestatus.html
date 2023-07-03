@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<br>
+
+
+<div style="text-align: center; background-color: aliceblue;">
+
+    <h2>Encours de livraison : {{succesful}}</h2>
+    <h2>Echec : {{failed}}</h2>
+
+
+    <br>
+
+    <h3>{{failed_livraisons}} </h3>
+   
+    <!-- <table>
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th>ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cmd_id,website in failed_livraisons %}
+
+            <tr>
+                <td>{{website}}</td>
+                <td>{{cmd_id}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table> -->
+
+  
+    
+
+
+
+    
+
+
+
+
+</div>
+
+
+{% endblock %}
+

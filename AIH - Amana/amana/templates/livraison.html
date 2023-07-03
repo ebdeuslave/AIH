@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+
+{% block body %}
+{% load pagingfilter %}
+
+
+
+<br><br><br><br>
+<div class="button-group">
+    {% if user.is_staff %}
+    <a href="{% url 'amanaApp:add_livraison' %}" class="btn btn-primary btn-md" role="button">Ajouter </a>
+    {% endif %}
+
+    <a href="#" class="btn btn-secondary btn-md" role="button" style="float: right;">Total Livraisons : <br>{{total}}</a>
+    <a href="#" class="btn btn-secondary btn-md" role="button" style="float: right;">Total Fonds : <br>{{sum_mt_all}} DH</a>
+
+    
+    
+    
+    <a href="#" class="btn btn-primary btn-md" role="button" style="float: right; margin-right: 10px;">Expedié : {{ total_exp }}<br>Fonds : {{ sum_mt_exp }} DH<br>{{percentage_exp}}</a>
+    <a href="#" class="btn btn-success btn-md" role="button" style="float: right; margin-right: 10px;">Livré : {{ total_delivered }}<br>Fonds : {{ sum_mt_delivered }} DH<br>{{percentage_delivered}}</a>
+    <a href="#" class="btn btn-success btn-md" role="button" style="float: right; margin-right: 10px;">Payé : {{ total_paid }}<br>Fonds : {{ sum_mt_paid }} DH<br>{{percentage_paid}}</a>
+    <a href="#" class="btn btn-danger btn-md" role="button" style="float: right; margin-right: 10px;">Retourné : {{ total_returned }}<br>Fonds : {{ sum_mt_returned }} DH<br>{{percentage_returned}}</a>
+
+
+</div>
+<br><br><br><br>
+<div class="card card-body" id='filter'>
+    <form action="get" autocomplete="off">
+        {{ filter.form }} 
+        <button class="btn btn-primary" type="submit">Filtrer</button>
+
+    </form>
+</div>
+
+
+<br>
+<div id='search'style="text-align: center;">
+    <form action="{% url 'amanaApp:search_results' %}" method="get">
+        <input name="q" id="id_q" type="text" placeholder="Search.." required>
+        <button type="submit">Find</button>
+    </form>
+</div>
+<br>
+{% if user.is_staff %}
+<button id="delete" class="btn btn-danger">Suppression en Masse</button>
+
+<br><br><br>
+
+<div class="dropdown" style="float: left;">
+  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Change Status
+  </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <button class="dropdown-item" id="delivered" style="background-color:lightgreen;">Livré </button>
+    <button class="dropdown-item" id="paid" style="background-color:lightblue;">Payé </button>
+    <button class="dropdown-item" id="returned" style="background-color:red;">Retourné </button>
+  </div>
+</div>
+{% endif %}
+
+<div class="dropdown" style="float: right;">
+  <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    PDF
+  </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <a class="dropdown-item pdfBtn" href="{% url 'amanaApp:etiquette' %}" role="button" target="_blank" style="background-color:lightgreen;">Etiquettes</a>
+    <a class="dropdown-item pdfBtn" href="{% url 'amanaApp:ramassage' %}" role="button" target="_blank" style="background-color:lightblue;">Bon de Ramassage</a>
+  </div>
+</div>
+
+<br><br><br>
+
+
+<table id='livraison-table' class="table table-hover">
+    <thead>
+        <tr>
+            <th><input type="checkbox" id='select_all' name='selectall' value='0' onclick="select_all(this)"></th>
+            <th>CAB</th>
+            <th>Site</th>
+            <th>Nom</th>
+            <th>Adresse</th>
+            <th>Ville</th>
+            <th>Phone</th>
+            <th>Montant</th>
+            <th>Status</th>
+            <th>Tracking</th>
+            <th>Whatsapp</th>
+            <th>Date</th>
+            <th>Modifier</th>
+   
+
+        </tr>
+    </thead>
+    {% csrf_token %}
+    <tbody>
+        
+        {% for l in livraison %}
+        <tr {%if l.status.name == 'Retourné' %} style="background-color: red;" {% elif l.status.name == 'Livré' %} style="background-color: lightgreen;" {% elif l.status.name == 'Payé' %} style="background-color: lightblue;" {%endif%} id="{{l.pk}}"> 
+            <td style="text-align:center;">{%if l.status.name != 'Payé' and l.status.name != 'Retourné' %}<input id='select' type="checkbox" name="selected" value="{{ l.cab }}">{%endif%}</td>
+            <td>AIH{{l.cab}}MA</td>
+            <td>{{ l.site }}</td> 
+            <td>{{ l.name }}</td>
+            <td>{{ l.address }}</td>
+            <td>{{ l.city }}</td>
+            <td>{{ l.phone }}</td>
+            <td>{{ l.price }}</td>
+            <td>{{ l.status.name }}</td> 
+            <td style="text-align:center;"><a href="https://bam-tracking.barid.ma/?trackingCode=AIH{{ l.cab }}MA" target="_blank"><img src="/static/images/track.png" alt="Track" width="20px" height="20px"></a></td>
+            <td style="text-align:center;"><a href="https://wa.me/212{{ l.phone }}?text={{ l.site }}.ma%0A{{ l.name }}%0A{{ l.city }}%0A{{ l.price }} Dhs%0ACode amana : AIH{{l.cab}}MA%0Ahttps://bam-tracking.barid.ma/?trackingCode=AIH{{ l.cab }}MA%0Aà Bientôt" target="_blank"><i class="bi bi-whatsapp"></i></a></td>
+            <td>{{ l.created }}</td> 
+            <td  style="text-align:center;">{%if l.status.name != 'Payé' and l.status.name != 'Retourné' and user.is_staff %}<a href="{{ l.pk }}/update_livraison"><img src="/static/images/edit.png" alt="Modifier" width="20px" height="20px"></a>{%endif%}</td>
+        </tr>
+     
+            
+        
+        {% endfor %}
+    </tbody>
+</table>
+<br>
+<div id="pagination">
+    <span class="step-links">
+        {% if livraison.has_previous %}
+        <button type="button" class="btn btn-link"><a href="?{% param_replace page=1 %}"><p style="color: black; font-weight: bold;">&laquo; First</p></a></button>
+        <button type="button" class="btn btn-link"><a href="?{% param_replace page=livraison.previous_page_number %}"><p style="color: black; font-weight: bold;">Previous</p> </a></button>
+        {% endif %}
+
+        <span class="current">
+            Page {{ livraison.number }} of {{ livraison.paginator.num_pages }}
+        </span>
+
+        {% if livraison.has_next %}
+            <button type="button" class="btn btn-link"><a href="?{% param_replace page=livraison.next_page_number %}"><p style="color: black; font-weight: bold;">Next</p> </a></button>
+            <button type="button" class="btn btn-link"><a href="?{% param_replace page=paginator.num_pages %}"><p style="color: black;font-weight: bold;">Last &raquo;</p> </a></button>
+        {% endif %}
+        
+    </span>
+</div>
+<script>
+        var col = [1,2,5,6,7,8,11]
+        var table = $('#livraison-table').DataTable({
+            responsive: true,
+            order: [],
+            paging: false,
+            dom: 'Bfrtip',
+            buttons: [    
+        {
+            extend: 'pdfHtml5',
+            download: 'open',
+            text: 'Export to PDF',
+            title: `Africa Internet Holding\nEtat Amana`,
+            messageTop: 'Total Colis : {{ total }} - Montant Total : {{sum_mt_all}} DHs - Frais de livraison : {{ fees }} DHs\nTotal Livrés : {{TotaldeliveredANDpaid}} - Fonds Net : {{fonds_net}} DHs\nTotal Retournés : {{total_returned}} - Fonds Perte : {{loss}} DHs ',
+            exportOptions: {
+                columns : col
+            },
+            customize: function(doc) {
+                doc.defaultStyle.fontSize = 12; 
+                }  
+        },
+
+            ]
+        });
+
+
+</script>
+{% endblock %}
+

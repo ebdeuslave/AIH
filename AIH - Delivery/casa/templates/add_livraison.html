@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+<title>{% block title %} Ajouter une nouvelle Livraison - Delivery System {% endblock %}</title>
+
+{% block body %}
+<div class="container">
+    {% for message in messages %}
+    <p id="added" style="color:black;background-color: lightgreen; width: auto;display: inline-block;">{{message}}</p>
+    {%endfor%}
+    <br>
+    <form action="" method="POST">
+       
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group row" id='livraison_form'>
+            <label for="id_{{ field.name }}" class="col-2 col-form-label" style="background-color: aliceblue;"> 
+            
+                {%if field.label == 'Created' %}  Date {%endif%}
+                {%if field.label == 'Commentaire' %} Remarque
+                {%else%} {{ field.label }} {%endif%}
+            
+            </label>
+            <div class="col-10">
+                {{ field }}
+            </div>
+
+        </div>
+
+        {% endfor %}
+        <br>
+        <button type="submit" id = 'add_btn' class="btn btn-primary" name="button" style="margin-bottom: 50px;">Ajouter</button>
+    </form>
+
+</div>
+{{ form.as_ap }}
+ <p id="msg-phone" style="color:black;background-color: red; width: auto;display: inline-block;"></p>
+{% endblock %}

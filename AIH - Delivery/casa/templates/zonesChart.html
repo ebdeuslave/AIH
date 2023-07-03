@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+<title>{% block title %} Charts - Delivery System {% endblock %}</title>
+{% block body %}
+
+
+
+{%block scripts%}
+<script>
+
+    $(document).ready(function () {
+
+        // Zone Chart
+
+        var zones = [];
+        var count = [];
+
+        {% for k, v in counting_zones.items %}
+            zones.push('{{k}}');
+            count.push('{{v}}')
+        {% endfor %}
+
+        var ctx = document.getElementById('zonesChart').getContext('2d');
+        var zonesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: zones,
+                datasets: [{
+                    label: 'Total CMDs',
+                    data: count,
+                    backgroundColor: 'blue',
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1,
+                },
+                ],
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+
+                    }
+                }
+            }
+
+        });
+
+
+    })
+</script>
+{%endblock scripts%}
+
+
+
+
+{%block content%}
+
+<h1 style="text-align: center;color: aliceblue;font-weight: bold;">Statistiques - Zones</h1>
+
+<br>
+<div class="card card-body" id='filter'>
+    <form action="get" autocomplete="off">
+        {{ filter.form }}
+        <button class="btn btn-primary" type="submit">Filtrer</button>
+
+    </form>
+</div>
+
+<br>
+
+<canvas id="zonesChart" width="50" height="30" style="background-color: white;"></canvas>
+
+
+
+
+{%endblock content%}
+
+
+{% endblock %}

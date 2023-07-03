@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+<title>{% block title %} Livraison - Delivery System {% endblock %}</title>
+
+{% block body %}
+
+{% load startswith %}
+<br>
+
+{% if user.is_staff %}
+
+<br><br>
+
+<div class="button-group">
+    <a href="{% url 'livraison:add_livraison' %}" class="btn btn-primary btn-md" role="button">Ajouter une nouvelle Livraison</a>
+    <a href="#" class="btn btn-secondary btn-md" role="button" style="float: right;">Total : {% if total == 1 or total == 0%} {{ total }} Livraison {%else%}{{ total }} Livraisons {%endif%} <br> {{sum_mt_all}} DH </a>
+    <a href="#" class="btn btn-success btn-md" role="button" style="float: right; margin-right: 10px;">Livrés : {{ total_delivered }} <br>{{ sum_mt_delivered }} DH </a>
+    <a href="#" class="btn btn-primary btn-md" role="button" style="float: right; margin-right: 10px;">Encours : {{ total_encours }} <br>{{ sum_mt_encours }} DH</a>
+    <a href="#" class="btn btn-danger btn-md" role="button" style="float: right; margin-right: 10px;">Retournés : {{ total_returned }} <br> {{ sum_mt_returned }} DH </a>
+    
+</div>
+
+{%endif%}
+<br><br>
+
+<div id='search' style="text-align: center;" >
+    <form action="{% url 'livraison:search_results' %}" method="get">
+        <input name="q" type="text" placeholder="Search.." value="{{query}}" required>
+        <button type="submit">Find</button>
+    </form>
+</div>
+
+<br>
+{% if total == 0 %}
+<br><br><br><br><br><br><p class="text-center display-4" style="color: red;">"{{query}}" Not Found</p>
+
+{% else %}
+
+
+<br><br>
+<table id='livraison-search-table' class="table table-hover">
+    <thead>
+        <tr>
+            {% if user.is_staff %}
+            <th><input type="checkbox" id='select_all' name='selectall' value='0' onclick="select_all(this)"></th>
+            <th>ID</th>
+            {% endif %}
+            <th>Site</th>
+            <th>Zone</th>
+            <th>Phone</th>
+            <th>Montant</th>
+            <th>Note</th>
+            <th>Date</th>
+            <th>Mr</th>
+            <th>Status</th>
+            {% if user.is_staff %}
+            <th>Modifier</th>
+            {% endif %}
+            {% if user.is_superuser %}
+            <th>Supprimer</th>
+            {% endif %}
+            
+
+           
+        </tr>
+    </thead>
+    {% csrf_token %}
+    <tbody>
+        
+        {% for l in result %}
+        <tr {%if l.status.pk == 3 %} style="background-color: red;" {% elif l.status.pk == 2 %} style="background-color: lightgreen;" {%endif%} id="{{l.pk}}"> 
+            {% if user.is_staff %}
+            <td style="text-align:center;"><input id='select' type="checkbox" name="selected" value="{{ l.pk }}" ></td>
+            <td>{{ l.n_commande }}</td>
+            {% endif %}
+            <td>{{ l.site }}</td>
+            <td> {%if l.zone.nom|startswith:'Z'%} {{ l.zone.nom|slice:'4:'}} {%else%}  {{l.zone.nom}} {%endif%}</td>
+            <td id="phone">{{ l.phone }}</td>
+            <td style="text-align:center;">{{ l.montant_DH }}</td>
+            <td>{{ l.commentaire }}</td> 
+            <td>{{ l.created }}</td> 
+            <td title="{{ l.zone.livreur.phone }}">{{ l.zone.livreur }}</td>
+            <td>{{ l.status.nom }}</td>
+            {% if user.is_staff %}
+            <td  style="text-align:center;"><a href="{{ l.pk }}/update"><img src="/static/img/edit.png" alt="Modifier" width="20px" height="20px"></a></td>
+            {% endif %} 
+            {% if user.is_superuser %}
+            <td  style="text-align:center;"><a href="{{ l.pk }}/delete"><img src="/static/img/delete.png" alt="Delete" width="20px" height="20px"></a></td>
+            {% endif %} 
+        </tr>
+        {% endfor %}
+        {% endif %} 
+
+
+       
+    </tbody>
+</table>
+
+{% endblock %}

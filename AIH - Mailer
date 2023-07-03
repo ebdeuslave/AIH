@@ -1,0 +1,347 @@
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import filedialog
+from tkinter import *
+from PIL import ImageTk, Image
+import os
+import requests
+import webbrowser
+import ezgmail
+from lxml import etree
+
+
+####################### AUTH KEY ######################
+authKey = 'API_KEY'
+
+try:
+    # Initialize global sets and vars
+    emails = set()
+    get_img = ''
+
+########################### Functions ###################################
+    def addLinks():
+        global site
+        if var.get() == 1:
+            site = 'parapharma.ma'
+        elif var.get() == 2:
+            site = 'coinpara.ma'
+        elif var.get() == 3:
+            site = 'www.parabio.ma'
+        # MSG Frame
+        rupture = f'''Bonjour Cher Client,<br><br>
+Merci d'avoir passé votre commande chez {site}, 
+
+<br><br>
+
+Merci de prise en considération que les produits que vous avez commandé sur notre site web sont rupture de stock. <br>Service {site} reste à votre disposition pour tout renseignement complémentaire.
+
+<br><br>
+
+
+Cordialement
+
+<br><br><br>
+L'équipe du service client {site}
+
+'''
+
+        pr = f'''Bonjour Cher Client,<br><br>
+Merci d'avoir passé votre commande chez {site}, 
+<br><br>
+
+Le livreur a tenté de vous appeler mais votre numéro de téléphone est injoignable ou incorrect,
+veuillez nous envoyer un numero de téléphone joignable SVP,
+
+<br><br>
+Cordialement
+<br><br><br>
+L'équipe du service client {site}
+
+'''
+        if cmdID.get().isnumeric():
+            try:
+                # Get CMD infos
+                cmd_link = f'https://{site}/api/orders/{cmdID.get()}'
+                r = requests.get(cmd_link, auth=(authKey, ''))
+                root = etree.fromstring(r.content)
+                reference = root.xpath('//reference')[0].text
+                id_customer = root.xpath("//id_customer")[0].text
+                customerLink = f'https://{site}/api/customers/{id_customer}'
+                r2 = requests.get(customerLink, auth=(authKey, ''))
+                root2 = etree.fromstring(r2.content)
+                email = root2.xpath("//email")[0].text
+                fullName = f'{root2.xpath("//firstname")[0].text} {root2.xpath("//lastname")[0].text}'
+                cmd_info = f'Commande N° {reference} au Nom de: {fullName}'
+                if email in emails:
+                    messagebox.showinfo('Parapharma Mailer',
+                                        'had l cmd deja kayna')
+                else:
+                    emails.add(email)
+                    emailStr.set(emails)
+                    msgField.delete("1.0", "end-1c")
+                    if msgVar.get() == 4:
+                        msgField.insert(END, pr)
+                    elif msgVar.get() == 5:
+                        msgField.insert(END, rupture)
+                    if var.get() == 1:
+                        coinpara.config(state='disable')
+                        parabio.config(state='disable')
+                    elif var.get() == 2:
+                        parapharma.config(state='disable')
+                        parabio.config(state='disable')
+                    elif var.get() == 3:
+                        coinpara.config(state='disable')
+                        parapharma.config(state='disable')
+
+                    if len(emails) == 1:
+                        subjectField.delete(0, 'end')
+                        subjectField.insert(END, cmd_info)
+                    else:
+                        subjectField.delete(0, 'end')
+                        subjectField.insert(END, site)
+                    cmdID.delete(0, 'end')
+                    clearBtn.config(state='active')
+                    Btn.config(state='active')
+                    cmdID.focus()
+            except Exception as e:
+                print(e)
+                messagebox.showerror(
+                    'Parapharma Mailer', 'had commande makinach wla chi error f site wla conx')
+                cmdID.focus()
+        else:
+            messagebox.showwarning(
+                "Parapharma Mailer", "3tini numero de cmd")
+            cmdID.focus()
+
+        cmdLabel.config(text='Number of Emails : ' + str(len(emails)))
+        if not emails:
+            btnRemoveEmail.config(state='disabled')
+        else:
+            btnRemoveEmail.config(state='active')
+
+    def clear():
+        emails.clear()
+        subjectField.delete(0, 'end')
+        msgField.delete("1.0", "end-1c")
+        cmdID.delete(0, 'end')
+        cmdLabel.config(text='Number of Emails : 0')
+        emailStr.set('Emails List Cleared')
+        clearBtn.config(state='disabled')
+        btnRemoveEmail.config(state='disabled')
+        Btn.config(state='disabled')
+        parapharma.config(state='active')
+        coinpara.config(state='active')
+        parabio.config(state='active')
+
+    def removeMail():
+        if remove_mail.get() in emails:
+            emails.remove(remove_mail.get())
+            remove_mail.delete('0', END)
+            subjectField.delete(0, 'end')
+            subjectField.insert(END, site.title())
+            if emails:
+                emailStr.set(emails)
+            else:
+                emailStr.set('Emails List Cleared')
+                subjectField.delete(0, 'end')
+                msgField.delete("1.0", "end-1c")
+                clearBtn.config(state='disabled')
+                parapharma.config(state='active')
+                coinpara.config(state='active')
+                parabio.config(state='active')
+        elif remove_mail.get().isspace() or not remove_mail.get():
+            messagebox.showwarning('Parapharma Mailer', '3tini Email li nmse7')
+        else:
+            messagebox.showinfo('Parapharma Mailer',
+                                'had email makinch f list')
+        cmdLabel.config(text='Number of Emails : ' + str(len(emails)))
+        if not emails:
+            btnRemoveEmail.config(state='disabled')
+            Btn.config(state='disabled')
+        else:
+            btnRemoveEmail.config(state='active')
+            Btn.config(state='active')
+
+    def directory():
+        global get_img
+        # select imgs to upload
+        get_img = filedialog.askopenfilenames(parent=top)
+        # Show the directory
+        if not get_img:
+            filename.configure(text='/PATH/')
+        else:
+            filename.configure(text=get_img)
+
+    def gmailAPIMailsSender():
+        # sender = ezgmail.EMAIL_ADDRESS #### to check the email sender
+        ezgmail.init(tokenFile=f'{site}_token.json',
+                     credentialsFile=f'{site}_credentials.json')
+        if subjectField.get() and msgField.get("1.0", "end-1c") and not subjectField.get().isspace() and not msgField.get("1.0", "end-1c").isspace():
+            try:
+                if messagebox.askyesno('Parapharma Mailer', 'Confirm'):
+                    for email in emails:
+                        ezgmail.send(email, subjectField.get(), msgField.get("1.0", END), [
+                            F for F in get_img if get_img], mimeSubtype='html')
+                    messagebox.showinfo('Parapharma Mailer',
+                                        f'L\'Msg tsift l >>>:\n {emails}')
+            except Exception as e:
+                print(e)
+                messagebox.showerror(
+                    'Parapharma Mailer', 'Chi moshkil f GMAIL API, yakma mse7to shi fichier ?! swlo Abderrahim')
+        else:
+            messagebox.showwarning('Parapharma Mailer',
+                                   'Chi haja khawya 3mroha (Subject or Message)')
+
+    # Resize BG dynamicly
+
+    def resizer(e):
+        global bg, resized_bg, new_bg
+        if os.path.isfile('background.png'):
+            bg = Image.open('background.png')
+            resized_bg = bg.resize((e.width, e.height), Image.ANTIALIAS)
+            new_bg = ImageTk.PhotoImage(resized_bg)
+            background_label = Label(top, image=new_bg)
+
+    def creator():
+        webbrowser.open('https://www.instagram.com/ebdeuslave/')
+
+
+########################### Tkinter Gui ############################
+    top = tk.Tk()
+    top.state("zoomed")
+    if os.path.isfile('para17.ico'):
+        top.iconbitmap('para17.ico')
+    top.title("Parapharma - Mails Sender")
+    top.geometry('600x630')
+    top.configure(background='#BBF7D3')
+    if os.path.isfile('background.png'):
+        bg_file = ImageTk.PhotoImage(file=r"background.png")
+        background_label = Label(top, image=bg_file)
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
+####################### Tkinter Frames #################################
+
+    # Emails Frame
+    emailsFrame = LabelFrame(top, bd=5, text='Emails Section', font=(
+        "Helvetica", "15", 'bold'), bg='DeepSkyBlue2')
+    emailsFrame.place(x=3, y=3, relwidth=0.3, relheight=0.8)
+    var = IntVar()
+    parapharma = Radiobutton(
+        emailsFrame, text='Parapharma', variable=var, value=1, bg='DeepSkyBlue2')
+    parapharma.pack(pady=1)
+    parapharma.select()
+    coinpara = Radiobutton(emailsFrame, text='Coinpara',
+                           variable=var, value=2, bg='DeepSkyBlue2')
+    coinpara.pack(pady=1)
+    parabio = Radiobutton(emailsFrame, text='Parabio',
+                          variable=var, value=3, bg='DeepSkyBlue2')
+    parabio.pack(pady=1)
+
+    tk.Label(emailsFrame, text='ID:', bg='DeepSkyBlue2',
+             font=("Helvetica", "12", 'bold')).pack(pady=10)
+
+    cmdID = tk.Entry(emailsFrame, bg="DeepSkyBlue2", bd=3, width=10)
+    cmdID.pack(pady=1)
+
+    addBtn = tk.Button(emailsFrame, text='Add CMD', command=addLinks, activebackground='white',
+                       activeforeground='black', bg='DeepSkyBlue2', bd=3, padx=1, pady=1, width=12, font='calibri 10')
+    addBtn.pack(pady=5)
+
+    cmdLabel = tk.Label(
+        emailsFrame, text="Number of Emails : 0", bg="DeepSkyBlue2")
+    cmdLabel.pack()
+    clearBtn = tk.Button(emailsFrame, text='x Clear List x', command=clear,
+                         activeforeground='black', bg='red', bd=1, padx=1, pady=1, width=12, font='calibri 10')
+    clearBtn.pack(pady=5)
+    clearBtn.config(state='disabled')
+    Label(emailsFrame, text='**Paste Email below to Delete**',
+          font=("Helvetica", "12", 'bold'), bg="firebrick1").pack(pady=10)
+
+    remove_mail = Entry(emailsFrame, bd=3, width=50, bg='DeepSkyBlue2')
+    remove_mail.pack(pady=1)
+    btnRemoveEmail = Button(emailsFrame, text='Remove Email', command=removeMail,
+                            activeforeground='black', bg='red', bd=1, padx=1, pady=1, width=12, font='calibri 10')
+    btnRemoveEmail.pack(pady=10)
+    btnRemoveEmail.config(state='disabled')
+
+    emailStr = StringVar()
+    emailStr.set('Emails List is Empty')
+    emailsLabel = tk.Entry(emailsFrame, state='readonly', selectbackground='DeepSkyBlue2',
+                           textvariable=emailStr, bd=0, width=50, font=("Helvetica", "12"), justify='center')
+    emailsLabel.pack(pady=50)
+
+    msgFrame = LabelFrame(top, bd=5, text='Message Section', font=(
+        "Helvetica", "15", 'bold'), bg='#FCD1AC')
+    msgFrame.place(x=600, y=3, relwidth=0.5, relheight=0.8)
+    tk.Label(msgFrame, text='Subject :', font=(
+        "Helvetica", "12", 'bold')).pack(pady=1)
+
+    subjectField = Entry(msgFrame, bg="white", selectbackground='DeepSkyBlue2', fg='black',
+                         font=("Helvetica", "12"), bd=4)
+    subjectField.pack(ipadx=90, ipady=1)
+
+    tk.Label(msgFrame, text='Message :', font=(
+        "Helvetica", "12", 'bold')).pack(pady=1)
+    msgVar = IntVar()
+    prMsgChoice = Radiobutton(
+        msgFrame, text='PR/Injoignable', variable=msgVar, value=4, bg='#FCD1AC')
+    prMsgChoice.pack(pady=1)
+    prMsgChoice.select()
+    ruptureChoice = Radiobutton(
+        msgFrame, text='Rupture', variable=msgVar, value=5, bg='#FCD1AC')
+    ruptureChoice.pack(pady=1)
+    # ruptureChoice.select()
+    msgField = Text(msgFrame, bg="white", selectbackground='DeepSkyBlue2', cursor='heart', height=10,
+                    fg='black', bd=6, font=("Helvetica", "14", 'bold'))
+    msgField.pack(ipadx=200, ipady=50, pady=10)
+
+    # Upload files to send
+    browse = Button(msgFrame, text='Upload Files',
+                    command=directory, width=30)
+    browse.pack(pady=5)
+    filename = Label(msgFrame, text='/PATH/')
+    filename.pack(pady=20)
+
+    # Send Button
+    Btn = tk.Button(msgFrame, text='Send', command=gmailAPIMailsSender, activebackground='green',
+                    activeforeground='black', bg='SeaGreen1', bd=3, padx=1, pady=1, width=12, font='calibri 10')
+    Btn.pack(pady=5)
+    Btn.config(state='disabled')
+
+    # Salute to me xD
+
+    # Menu
+    menu = tk.Menu()
+    created = tk.Menu(menu, tearoff=False)
+    menu.add_cascade(label='Created by', menu=created)
+    created.add_command(label='@ebdeuslave', command=creator)
+
+    ############ Add Popup Right Click ############
+    from pyautogui import *
+
+    def popup(e):
+        menu2.tk_popup(e.x_root, e.y_root)
+
+    menu2 = Menu(top, tearoff=False)
+
+    menu2.add_command(label='Select All', command=lambda: hotkey('ctrl', 'a'))
+    menu2.add_command(label='Cut',        command=lambda: hotkey('ctrl', 'x'))
+    menu2.add_command(label='Copy',       command=lambda: hotkey('ctrl', 'c'))
+    menu2.add_command(label='Paste',      command=lambda: hotkey('ctrl', 'v'))
+    menu2.add_separator()
+
+    menu2.add_command(label='Exit', command=top.quit)
+    top.bind("<Button-3>", popup)
+
+    top.config(menu=menu)
+    top.resizable(True, True)
+    top.bind('<Configure>', resizer)
+
+    top.mainloop()
+
+
+# If cannot connect raise an error
+except Exception as e:
+    print(e)
+    messagebox.showerror(
+        'Parapharma Mailer', 'Chi moshkil f reseau wla system parapharma, 3awdo 7awlo..')
+    top.destroy()

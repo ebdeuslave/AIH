@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+
+{% block body %}
+
+<br>
+{% if user.is_staff %}
+
+<br><br>
+
+<div class="button-group">
+    <a href="{% url 'amanaApp:add_livraison' %}" class="btn btn-primary btn-md" role="button">Ajouter une nouvelle Livraison</a>
+    <a href="#" class="btn btn-secondary btn-md" role="button" style="float: right;">Total Livraisons : <br>{{total}}</a>
+    <a href="#" class="btn btn-secondary btn-md" role="button" style="float: right;">Total Fonds : <br>{{sum_mt_all}} DH</a>
+
+    <a href="#" class="btn btn-primary btn-md" role="button" style="float: right; margin-right: 10px;">Expedié : {{ total_exp }}<br>Fonds : {{ sum_mt_exp }} DH<br>{{percentage_exp}}</a>
+    <a href="#" class="btn btn-success btn-md" role="button" style="float: right; margin-right: 10px;">Livré : {{ total_delivered }}<br>Fonds : {{ sum_mt_delivered }} DH<br>{{percentage_delivered}}</a>
+    <a href="#" class="btn btn-success btn-md" role="button" style="float: right; margin-right: 10px;">Payé : {{ total_paid }}<br>Fonds : {{ sum_mt_paid }} DH<br>{{percentage_paid}}</a>
+    <a href="#" class="btn btn-danger btn-md" role="button" style="float: right; margin-right: 10px;">Retourné : {{ total_returned }}<br>Fonds : {{ sum_mt_returned }} DH<br>{{percentage_returned}}</a>
+    
+</div>
+
+{%endif%}
+<br><br>
+
+<div id='search' style="text-align: center;" >
+    <form action="{% url 'amanaApp:search_results' %}" method="get">
+        <input name="q" type="text" placeholder="Search.." value="{{query}}" required>
+        <button type="submit">Find</button>
+    </form>
+</div>
+
+<br>
+{% if total == 0 %}
+<br><br><br><br><br><br><p class="text-center display-4" style="color: red;">"{{query}}" Not Found</p>
+
+{% else %}
+
+<br>
+
+{% if user.is_staff %}
+<button id="delete" class="btn btn-danger">Suppression en Masse</button>
+<div style="float:right;">
+    <button style="margin-right: 9px;" id="delivered" class="btn btn-success"> Marquer comme Livré </button>
+    <button id="paid" class="btn btn-primary">Marquer comme Payé </button>
+    <button id="returned" class="btn btn-danger">Marquer comme Retourné </button>
+</div>
+{% endif %}
+
+<br><br>
+<table id='livraison-search-table' class="table table-hover">
+    <thead>
+        <tr>
+            <th><input type="checkbox" id='select_all' name='selectall' value='0' onclick="select_all(this)"></th>
+            <th>CAB</th>
+            <th>Site</th>
+            <th>Nom</th>
+            <th>Adresse</th>
+            <th>Ville</th>
+            <th>Phone</th>
+            <th>Montant</th>
+            <th>Status</th>
+            <th>Tracking</th>
+            <th>Whatsapp</th>
+            <th>Date</th>
+            <th>Modifier</th>
+   
+
+        </tr>
+    </thead>
+    {% csrf_token %}
+    <tbody>
+        
+        {% for l in result %}
+        <tr {%if l.status.name == 'Retourné' %} style="background-color: red;" {% elif l.status.name == 'Livré' %} style="background-color: lightgreen;" {% elif l.status.name == 'Payé' %} style="background-color: green;" {%endif%} id="{{l.pk}}"> 
+            <td style="text-align:center;">{%if l.status.name != 'Payé' %}<input id='select' type="checkbox" name="selected" value="{{ l.cab }}">{%endif%}</td>            <td id="cab">AIH{{ l.cab }}MA</td>
+            <td>{{ l.site }}</td> 
+            <td>{{ l.name }}</td>
+            <td>{{ l.address }}</td>
+            <td>{{ l.city }}</td>
+            <td>{{ l.phone }}</td>
+            <td>{{ l.price }}</td>
+            <td>{{ l.status.name }}</td> 
+            <td style="text-align:center;"><a href="https://bam-tracking.barid.ma/?trackingCode=AIH{{ l.cab }}MA" target="_blank"><img src="/static/images/track.png" alt="Track" width="20px" height="20px"></a></td>
+            <td style="text-align:center;"><a href="https://wa.me/212{{ l.phone }}?text={{ l.site }}.ma%0A{{ l.name }}%0A{{ l.city }}%0A{{ l.price }} Dhs%0ACode amana : AIH{{l.cab}}MA%0Ahttps://bam-tracking.barid.ma/?trackingCode=AIH{{ l.cab }}MA%0Aà Bientôt" target="_blank"><i class="bi bi-whatsapp"></i></a></td>
+            <td>{{ l.created }}</td> 
+            <td  style="text-align:center;">{%if l.status.name != 'Payé' and user.is_staff %}<a href="{{ l.pk }}/update_livraison"><img src="/static/images/edit.png" alt="Modifier" width="20px" height="20px"></a>{%endif%}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}
+

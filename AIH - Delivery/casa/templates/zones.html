@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+<title>{% block title %} Zones - Delivery System {% endblock %}</title>
+
+{% block body %}
+
+
+<br><br>
+
+
+<div class="button-group">
+    {% if user.is_staff %}
+    <a href="{% url 'livraison:add_zone' %}" class="btn btn-primary btn-md" role="button">Ajouter une nouvelle Zone</a>
+    {%endif%}
+    <a href="#" class="btn btn-secondary btn-md" role="button">Total : {{ total }} Zones</a>
+</div>
+
+{% if count == 0 %}
+<br><br><br><br><br><br><p class="text-center display-4">Nothing's found</p>
+
+{% else %}
+
+<br>
+
+
+<table id='zones-table' class="table table-hover">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Livreur</th>
+            {% if user.is_staff %}
+            <th style="text-align:center;">Modifier</th>
+            {%endif%}
+        
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for z in zones %}
+        <tr> 
+            <td>{{ z.nom }}</td>
+            <td>{{ z.livreur }}</td>
+            {% if user.is_staff %}
+            <td style="text-align:center;"><a href="{{ z.pk }}/update"><img src="../static/img/edit.png" alt="Modifier" width="20px" height="20px"></a></td>
+            {%endif%}
+        </tr>
+        {% endfor %}
+        {% endif %} 
+
+       
+    </tbody>
+</table>
+
+{% endblock %}
