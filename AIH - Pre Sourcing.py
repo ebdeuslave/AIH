@@ -12,94 +12,11 @@ from datetime import datetime, datetime, timedelta
 from dateutil.parser import parse
 from threading import Thread
 from __auth__ import * 
+from pathlib import Path
 import babel.numbers
 
 
-################################ Func ################################
-def login(driver, paraLink):
-    driver.get(paraLink)
-    user = driver.find_element(By.ID, "email")
-    user.send_keys(u)
-    passwd = driver.find_element(By.ID, "passwd")
-    passwd.send_keys(p)
-    driver.find_element(By.NAME , "submitLogin").click()
-    # Wait until it loads
-    WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.XPATH, '//*[@id="tab-AdminDashboard"]/a/span')))
-    # Go to CMDs
-    driver.find_element(By.XPATH , '//*[@id="subtab-AdminParentOrders"]/a').click()
-    time.sleep(1.5)
-    driver.find_element(By.ID, 'subtab-AdminOrders').click()
-    WebDriverWait(driver, 1000).until(EC.presence_of_element_located((By.XPATH, '//*[@id="page-header-desc-configuration-add"]')))  
-
-def Para_CMDs():
-    start = time.time()
-    if selected.get() == 'Parapharma':
-            site = 'BACKOFFICE'
-            apiSite = 'API_URL'
-    elif selected.get() == 'Coinpara':
-        site = 'BACKOFFICE'
-        apiSite = 'API_URL'
-    elif selected.get() == 'Parabio':
-        site = 'BACKOFFICE'
-        apiSite = 'API_URL'
-        
-    toDate_ = datetime.strptime(toDate.get(),'%Y-%m-%d')+timedelta(1)
-    toDate_ = toDate_.strftime('%Y-%m-%d')
-    exactTime_ = f'{exactTime.get()[:2]}:{exactTime.get()[2:4]}:{exactTime.get()[4:]}'
-    exactTime_ = re.sub('[^0-9:]', '', exactTime_)
-    ordersLink= f'{apiSite}?filter[invoice_date]=[{fromDate.get()} {exactTime_},{toDate_}]&filter[current_state]=[2,3]'
-    request = requests.get(ordersLink, auth=(apiKey,''))
-    root = etree.fromstring(request.content)
-    orders =  root.xpath('//order')
-    IDs = [order.attrib['id'] for order in orders]
-    driver = webdriver.Chrome(ChromeDriverManager(version="114.0.5735.90").install())
-    driver.maximize_window()
-    login(driver, site)
-    # Get Token 
-    token_path = driver.find_element(By.XPATH, '/html/body') 
-    token_value = token_path.get_attribute('data-token')
-
-    for id in IDs:
-        cmdProgress.pack(pady=5)
-        cmdLabel.pack()
-        cmdLabel.config(text=f'Téléchargement : Commande {IDs.index(id)+1}/{len(IDs)}')
-        top.update_idletasks()
-        cmdProgress['value'] += 100/len(IDs)
-        driver.get(f'{site}/index.php/sell/orders/{str(id)}/generate-invoice-pdf?_token={token_value}')
-
-    cmdProgress.stop()
-    cmdProgress.pack_forget()
-    cmdLabel.pack_forget()
-    end = time.time()
-    duration = end-start
-    messagebox.showinfo('Commandes', f'Terminée en: {round(duration,2)} Secs\n\n{len(IDs)} Commandes Téléchargées\n\nNOTE : Tsnaw tay telechargea kolchi 3ad sedo navigateur')
-    
-def check_cmd():
-    cmdBtn.config(state='disabled')
-    From = fromDate.get()
-    From = re.sub('[^0-9-]' , '', From)
-    To = toDate.get()
-    To = re.sub('[^0-9-]' , '', To)
-    date1 = From.split('-')
-    date2 = To.split('-')
-    try:
-        parse(From)
-        parse(To)
-        if date1 > date2:
-            messagebox.showerror('INVALID DATE', 'Date "From" must be before Date "To" - Set a VALID Date \nEx : \n2022-01-01 \n2022-01-02')
-        else:
-            try: Para_CMDs()
-            except Exception as e:
-                messagebox.showerror('Error', f'{e}\nerror line: {sys.exc_info()[-1].tb_lineno}')
-                cmdProgress.stop()
-                cmdLabel.config(text=f'Téléchargement : Erreur')
-    except:
-        messagebox.showerror('INVALID DATE', 'Invalid Format - Set a VALID Date \nEx : \n2022-01-01 \n2022-01-02')
-    
-    cmdBtn.config(state='active')
-
-
-####################### Products Exporter #######################
+####################### Invoices Downloader & Products Exporter #######################
 fileN = f'{datetime.now().strftime("%Y-%m-%d-%Hh-%Mmin")}.csv'
 DEFAULT_SUPPLIER = "CDP"
 
@@ -115,6 +32,74 @@ class Scraper:
         self.total_products = total_products
         self.total_quantities = total_quantities
    
+
+    def Para_CMDs(self):
+        start = time.time()
+
+        if selected.get() == 'Parabio':
+            site = 'https://www.parabio.ma'
+            apiSite = 'https://www.parabio.ma/api/orders'
+        else:
+            site = f'https://{selected.get().lower()}.ma'
+            apiSite = f'https://{selected.get().lower()}.ma/api/orders'
+            
+        toDate_ = datetime.strptime(toDate.get(),'%Y-%m-%d')+timedelta(1)
+        toDate_ = toDate_.strftime('%Y-%m-%d')
+        exactTime_ = f'{exactTime.get()[:2]}:{exactTime.get()[2:4]}:{exactTime.get()[4:]}'
+        exactTime_ = re.sub('[^0-9:]', '', exactTime_)
+        ordersLink= f'{apiSite}?filter[invoice_date]=[{fromDate.get()} {exactTime_},{toDate_}]&filter[current_state]=[2,3]'
+        request = requests.get(ordersLink, auth=(apiKey,''))
+        root = etree.fromstring(request.content)
+        orders =  root.xpath('//order')
+        IDs = [order.attrib['id'] for order in orders]
+
+
+        for id in IDs:
+            cmdProgress.pack(pady=5)
+            cmdLabel.pack()
+            cmdLabel.config(text=f'Téléchargement : Commande {IDs.index(id)+1}/{len(IDs)}')
+            top.update_idletasks()
+            cmdProgress['value'] += 100/len(IDs)
+            pdf_link = f"{site}/generatePDF.php?id_order={id}&secure_key=U4ZRRXFIIS6Q27TZGDLSCJZ7M5RT1YGT"
+            pdf_request = requests.get(pdf_link)
+            filename = Path(f'pdf/{id}.pdf')
+            filename.write_bytes(pdf_request.content)
+
+
+        cmdProgress.stop()
+        cmdProgress.pack_forget()
+        cmdLabel.pack_forget()
+        end = time.time()
+        duration = end-start
+        messagebox.showinfo('Commandes', f'Terminée en: {round(duration,2)} Secs\n\n{len(IDs)} Commandes Téléchargées\n\nNOTE : Tsnaw tay telechargea kolchi 3ad sedo navigateur')
+        
+
+    def check_cmd(self):
+        cmdBtn.config(state='disabled')
+        From = fromDate.get()
+        From = re.sub('[^0-9-]' , '', From)
+        To = toDate.get()
+        To = re.sub('[^0-9-]' , '', To)
+        date1 = From.split('-')
+        date2 = To.split('-')
+        try:
+            parse(From)
+            parse(To)
+            if date1 > date2:
+                messagebox.showerror('INVALID DATE', 'Date "From" must be before Date "To" - Set a VALID Date \nEx : \n2022-01-01 \n2022-01-02')
+            else:
+                try: self.Para_CMDs()
+                except Exception as e:
+                    messagebox.showerror('Error', f'{e}\nerror line: {sys.exc_info()[-1].tb_lineno}')
+                    cmdProgress.stop()
+                    cmdLabel.config(text=f'Téléchargement : Erreur')
+        except:
+            messagebox.showerror('INVALID DATE', 'Invalid Format - Set a VALID Date \nEx : \n2022-01-01 \n2022-01-02')
+        
+        cmdBtn.config(state='active')
+
+
+
     def getProducts(self, orderLink):
         try:
             r = requests.get(orderLink, auth=(apiKey,''))
@@ -159,10 +144,13 @@ class Scraper:
  
     def Para_Products(self):
         start = time.time()
-        
+
         exportBtn.config(state='disabled')
+        if selected.get() == "Parabio":
+            apiSite = f'https://www.{selected.get().lower()}.ma/api/orders' 
+        else:
+            apiSite = f'https://{selected.get().lower()}.ma/api/orders'
         
-        apiSite = f'https://{selected.get().lower()}.ma/api/orders'
         exactTime_ = f'{exactTime.get()[:2]}:{exactTime.get()[2:4]}:{exactTime.get()[4:]}'
         exactTime_ = re.sub('[^0-9:]', '', exactTime_)
         toDate_ = datetime.strptime(toDate.get(),'%Y-%m-%d')+timedelta(1)
@@ -236,14 +224,14 @@ class Scraper:
     def updateSuppliersProducts(self):
         global suppliers_products, ALL_PRODUCTS
         try:
-            r = requests.get("SUPPLIERS_API_URL", auth=(apiKey,''))
+            r = requests.get("https://parapharma.ma/api/suppliers", auth=(apiKey,''))
             root = etree.fromstring(r.content)
             suppliers =  root.xpath("//supplier")
             EXCLUDED = ["3", "4", "10"]
             IDs = [supplier.attrib['id'] for supplier in suppliers if supplier.attrib['id'] not in EXCLUDED]
             driver = webdriver.Chrome(ChromeDriverManager(version="114.0.5735.90").install())
             driver.maximize_window()
-            driver.get("BACKOFFICE")
+            driver.get("https://parapharma.ma/admin112nza0id")
             user = driver.find_element(By.ID, "email")
             user.send_keys(u)
             passwd = driver.find_element(By.ID, "passwd")
@@ -259,7 +247,7 @@ class Scraper:
             token_value = driver.find_element(By.XPATH, '/html/body').get_attribute('data-token')
             suppliers_data = {}
             for id in IDs:
-                driver.get(f"BACKOFFICE/index.php/sell/catalog/suppliers/{id}/products?_token={token_value}")
+                driver.get(f"https://parapharma.ma/admin112nza0id/index.php/sell/catalog/suppliers/{id}/products?_token={token_value}")
                 name = driver.find_element(By.TAG_NAME, "h1").text
                 products = driver.find_elements(By.CLASS_NAME, "card-header.clearfix")
                 suppliers_data[name] = [product.text for product in products]
@@ -323,7 +311,7 @@ exactTime.insert(END, '000000')
 
 cmdFrame = LabelFrame(top,bd=5, text='Commandes', font=("Helvetica", "15", 'bold'), bg='lightblue')
 cmdFrame.pack(pady=20)
-cmdBtn = Button(cmdFrame,text='Télécharger',command=lambda: Thread(target=check_cmd).start(),activebackground='white',activeforeground='black',bg='cyan',bd =5,padx=5,pady=3,width=9,font='mincho 12')
+cmdBtn = Button(cmdFrame,text='Télécharger',command=lambda: Thread(target=scraper.check_cmd).start(),activebackground='white',activeforeground='black',bg='cyan',bd =5,padx=5,pady=3,width=9,font='mincho 12')
 cmdBtn.pack(pady=20)
 cmdProgress = ttk.Progressbar(top, orient=HORIZONTAL, length=300, mode='determinate')
 cmdLabel = Label(top,bg='lightblue')
