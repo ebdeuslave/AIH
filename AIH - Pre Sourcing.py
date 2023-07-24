@@ -71,7 +71,7 @@ class Scraper:
         cmdLabel.pack_forget()
         end = time.time()
         duration = end-start
-        messagebox.showinfo('Commandes', f'Terminée en: {round(duration,2)} Secs\n\n{len(IDs)} Commandes Téléchargées\n\nNOTE : Tsnaw tay telechargea kolchi 3ad sedo navigateur')
+        messagebox.showinfo('Commandes', f'Terminée en: {round(duration,2)} Secs\n\n{len(IDs)} Commandes Téléchargées')
         
 
     def check_cmd(self):
